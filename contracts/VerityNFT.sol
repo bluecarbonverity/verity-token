@@ -10,6 +10,8 @@ contract VerityNFT is ERC721("VerityNFT", "VERY"), Ownable {
   string public baseURI;
   mapping (uint256 => string[]) public tokenIdToFileArray;
 
+  event BaseURIChanged (string _uri);
+
   /**
    * @dev Initialize the contract + print 4 NFTs
    */
@@ -32,6 +34,7 @@ contract VerityNFT is ERC721("VerityNFT", "VERY"), Ownable {
    */
   function setBaseURI(string memory _baseURIParam) public onlyOwner {
     baseURI = _baseURIParam;
+    emit BaseURIChanged(baseURI);
   }
 
   /**

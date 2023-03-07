@@ -56,7 +56,7 @@ describe('VerityNFT', function () {
     })
   })
 
-  describe('Contract Upgrade', () => {
+  describe('Upgraded Contract', () => {
     let verityNFTTest: Contract
 
     beforeEach(async () => {
@@ -70,10 +70,14 @@ describe('VerityNFT', function () {
       )
     })
 
-    it('implementation contract address should be different', async () => {
+    it('should have a different implementation contract address to original', async () => {
       expect(await upgrades.erc1967.getImplementationAddress(verityNFTTest.address)).not.to.equal(
         originalImplementationAddress
       )
+    })
+
+    it('should have an add() method', async () => {
+      expect(await verityNFTTest.add(1, 2)).to.equal(3)
     })
   })
 

@@ -53,7 +53,12 @@
     },
     {
       "address": "0x9A9f2CCfdE556A7E9Ff0848998Aa4a0CFD8863AE",
-      "txHash": "0x9a9c0e7d7359751af0a2d94ec9de3612d8652e4b6f28d2059dc5a836654951da",
+      "txHash": "0x2f015d81997a56a2a707f5484c9d602c7c322e0891729365cecdd1acb0033694",
+      "kind": "uups"
+    },
+    {
+      "address": "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c",
+      "txHash": "0x550cbb239f760fcedacc5763dcc46090c3eea35a0170da16fb8e02e0f47913d8",
       "kind": "uups"
     }
   ],

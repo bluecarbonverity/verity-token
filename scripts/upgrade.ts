@@ -1,9 +1,10 @@
 import { ethers, upgrades, run } from './exports'
 
 async function main() {
-  const VerityNFT = await ethers.getContractFactory('VerityNFT')
-
-  const verityNFT = await upgrades.deployProxy(VerityNFT, [])
+  const CONTRACT_ADDRESS = '0x01Df1f172AD55F088af1B465974396d61aFE11ab'
+  // const IMPLEMENTATION_ADDRESS = '0x9E79fD3B479f9F38c20f391BFc2612FbB0FADdE1'
+  const VerityNFT = await ethers.getContractFactory('VerityNFTTest')
+  const verityNFT = await upgrades.upgradeProxy(CONTRACT_ADDRESS, VerityNFT)
 
   await verityNFT.deployed()
 

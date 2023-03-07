@@ -1,10 +1,11 @@
-import { ethers } from 'hardhat'
+import { ethers, upgrades } from 'hardhat'
 import { Contract } from 'ethers'
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers'
 import { expect } from 'chai'
 
 describe('VerityNFT', function () {
   let verityNFT: Contract
+  let originalImplementationAddress: string
   let owner: SignerWithAddress
   let nonOwner: SignerWithAddress
   let baseURI: string
@@ -12,7 +13,10 @@ describe('VerityNFT', function () {
   beforeEach(async () => {
     ;[owner, nonOwner] = await ethers.getSigners()
     const VerityNFT = await ethers.getContractFactory('VerityNFT')
-    verityNFT = await VerityNFT.deploy()
+    verityNFT = await upgrades.deployProxy(VerityNFT, [])
+    originalImplementationAddress = await upgrades.erc1967.getImplementationAddress(
+      verityNFT.address
+    )
     await verityNFT.deployed()
     baseURI = 'https://ipfs.io/ipfs/'
   })
@@ -37,10 +41,6 @@ describe('VerityNFT', function () {
   describe('Token Metadata', () => {
     const tokenIds = [1, 2, 3, 4]
     const fileURI = 'Qmf9VAMw2D5VyKFgg5yEiGfUo8J4dEE9RFWHoccUaEBed6'
-    const files = [
-      'Qmf9VAMw2D5VyKFgg5yEiGfUo8J4dEE9RFWHoccUaEBed6',
-      'Qmf9VAMw2D5VyKFgg5yEiGfUo8J4dEE9RFWHoccUaEBed6',
-    ]
 
     beforeEach(async () => {
       for (const id of tokenIds) {
@@ -54,17 +54,31 @@ describe('VerityNFT', function () {
         expect(files[0]).to.equal(fileURI)
       }
     })
+  })
 
-    it('Should overwrite token files in dev mode', async () => {
-      const tokenId = 1
-      await verityNFT.devOverwriteTokenFiles(tokenId, files)
-      const retrievedFiles = await verityNFT.getTokenFiles(tokenId)
-      expect(retrievedFiles).to.eql(files)
+  describe('Contract Upgrade', () => {
+    let verityNFTTest: Contract
+
+    beforeEach(async () => {
+      const VerityNFTTest = await ethers.getContractFactory('VerityNFTTest')
+      verityNFTTest = await upgrades.upgradeProxy(verityNFT.address, VerityNFTTest)
+    })
+
+    it('should switch contract implementation to new contract', async () => {
+      expect(await upgrades.erc1967.getImplementationAddress(verityNFTTest.address)).to.equal(
+        await upgrades.erc1967.getImplementationAddress(verityNFT.address)
+      )
+    })
+
+    it('implementation contract address should be different', async () => {
+      expect(await upgrades.erc1967.getImplementationAddress(verityNFTTest.address)).not.to.equal(
+        originalImplementationAddress
+      )
     })
   })
 
   describe('setBaseURI', () => {
-    it('should allow the owner to set the baseURI', async function () {
+    it('should allow the owner to set the baseURI', async () => {
       const newBaseURI = 'https://new-base-uri.com/'
       await expect(verityNFT.setBaseURI(newBaseURI))
         .to.emit(verityNFT, 'BaseURIChanged')
@@ -73,41 +87,11 @@ describe('VerityNFT', function () {
       expect(await verityNFT.baseURI()).to.equal(newBaseURI)
     })
 
-    it('should revert when a non-owner tries to set the baseURI', async function () {
+    it('should revert when a non-owner tries to set the baseURI', async () => {
       const newBaseURI = 'https://new-base-uri.com/'
       await expect(verityNFT.connect(nonOwner).setBaseURI(newBaseURI)).to.be.revertedWith(
         'Ownable: caller is not the owner'
       )
-    })
-  })
-
-  describe('devOverwriteTokenFiles', () => {
-    const tokenIds = [1, 2, 3, 4]
-    const fileURI = 'Qmf9VAMw2D5VyKFgg5yEiGfUo8J4dEE9RFWHoccUaEBed6'
-    const files = [
-      'Qmf9VAMw2D5VyKFgg5yEiGfUo8J4dEE9RFWHoccUaEBed6',
-      'Qmf9VAMw2D5VyKFgg5yEiGfUo8J4dEE9RFWHoccUaEBed6',
-    ]
-
-    beforeEach(async () => {
-      for (const id of tokenIds) {
-        await verityNFT.addFileToToken(id, fileURI)
-      }
-    })
-
-    it('Should allow the owner to overwrite token files in dev mode', async () => {
-      const tokenId = 1
-      await verityNFT.devOverwriteTokenFiles(tokenId, files)
-      const retrievedFiles = await verityNFT.getTokenFiles(tokenId)
-      expect(retrievedFiles).to.eql(files)
-    })
-
-    it('should revert when a non-owner tries to overwrite token files in dev mode', async function () {
-      const tokenId = 1
-      const newBaseURI = 'https://new-base-uri.com/'
-      await expect(
-        verityNFT.connect(nonOwner).devOverwriteTokenFiles(tokenId, files)
-      ).to.be.revertedWith('Ownable: caller is not the owner')
     })
   })
 })

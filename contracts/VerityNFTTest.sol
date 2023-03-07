@@ -6,7 +6,7 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
-contract VerityNFT is Initializable, ERC721Upgradeable, OwnableUpgradeable, UUPSUpgradeable {
+contract VerityNFTTest is Initializable, ERC721Upgradeable, OwnableUpgradeable, UUPSUpgradeable {
   uint256 counter;
   string public baseURI;
   mapping (uint256 => string[]) public tokenIdToFileArray;
@@ -73,6 +73,13 @@ contract VerityNFT is Initializable, ERC721Upgradeable, OwnableUpgradeable, UUPS
    */
   function getTokenFiles(uint256 tokenId) public view returns (string[] memory) {
     return tokenIdToFileArray[tokenId];
+  }
+
+  /**
+   * @dev Dummy method for testing
+   */
+  function add(uint256 num1, uint256 num2) public pure returns (uint256) {
+    return num1 + num2;
   }
 
   /**
